@@ -85,4 +85,28 @@ export class AuthController {
 
     return { message: 'Token refreshed' };
   }
+
+  @Post('logout')
+  @ApiOperation({ summary: 'User logout' })
+  @ApiResponse({ status: 200, description: 'User logged out successfully.' })
+  logout(@Res({ passthrough: true }) res: Response) {
+    // Clear the access token and refresh token cookies
+    res.cookie('access_token', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      maxAge: 0, // Expire immediately
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    });
+
+    res.cookie('refresh_token', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      maxAge: 0, // Expire immediately
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    });
+
+    return { message: 'Logged out successfully' };
+  }
 }
