@@ -4,7 +4,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { JwtStrategy } from './passport/jwt.strategy';
 import { SharedModule } from './shared/shared.module';
-import { TenantModule } from './tenant/tenant.module';
+import { TenantEntityModule } from './tenant-entity/tenant-entity.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -16,9 +17,10 @@ import { TenantModule } from './tenant/tenant.module';
       }),
       inject: [ConfigService],
     }),
-    TenantModule,
+    TenantEntityModule,
     AuthModule,
     SharedModule,
+    UserModule,
   ],
   providers: [JwtStrategy],
 })

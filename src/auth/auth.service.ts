@@ -1,6 +1,5 @@
 // src/auth/auth.service.ts
 import {
-  ConflictException,
   Injectable,
   OnModuleInit,
   UnauthorizedException,
@@ -11,7 +10,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 import { User } from '../models/user.schema';
-import { RegisterUserDto } from './dto/register-user.dto';
 import { RefreshTokenService } from './refresh-token.service';
 
 @Injectable()
@@ -51,32 +49,6 @@ export class AuthService implements OnModuleInit {
 
     await adminUser.save();
     console.log('Admin user seeded successfully.');
-  }
-
-  async registerUser(createUserDto: RegisterUserDto): Promise<User> {
-    const { email, password, name, phone } = createUserDto;
-
-    // Check if the user already exists
-    const existingUser = await this.userModel.findOne({ email });
-    if (existingUser) {
-      throw new ConflictException('User with this email already exists');
-    }
-
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create a new user instance
-    const newUser = new this.userModel({
-      email,
-      password: hashedPassword,
-      name,
-      phone,
-      roles: ['tenant', 'tenant-admin'], // Default role
-      isActive: true, // Default status
-    });
-
-    // Save the user to the database
-    return await newUser.save();
   }
 
   async validateUser(email: string, password: string): Promise<User> {

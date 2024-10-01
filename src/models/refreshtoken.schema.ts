@@ -1,15 +1,15 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { BaseModel } from './base.schema';
 
 @Schema()
-export class RefreshToken extends Document {
+export class RefreshToken extends BaseModel {
   @Prop({ required: true })
   userId: string;
 
   @Prop({ required: true })
   token: string;
 
-  @Prop({ default: Date.now, expires: '7d' }) // Auto-delete after 7 days
+  @Prop({ default: Date.now, expires: '7d' })
   createdAt: Date;
 }
 

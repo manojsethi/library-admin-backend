@@ -3,7 +3,7 @@ import { InjectConnection } from '@nestjs/mongoose';
 import { Connection, createConnection } from 'mongoose';
 
 @Injectable({ scope: Scope.REQUEST })
-export class TenantConnectionService {
+export class TenantEntityConnectionService {
   private tenantConnections: Map<string, Connection> = new Map();
 
   constructor(@InjectConnection() private defaultConnection: Connection) {}

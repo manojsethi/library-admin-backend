@@ -1,8 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Schema as MongooseSchema } from 'mongoose';
+import { BaseModel } from './base.schema';
 
 @Schema()
-export class Tenant extends Document {
+export class TenantEntity extends BaseModel {
   @Prop({ required: true, unique: true })
   subdomain: string; // e.g., tenant1
 
@@ -64,4 +65,4 @@ export class Tenant extends Document {
   logo?: string; // URL or path to the logo image, optional field
 }
 
-export const TenantSchema = SchemaFactory.createForClass(Tenant);
+export const TenantEntitySchema = SchemaFactory.createForClass(TenantEntity);

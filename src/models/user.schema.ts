@@ -1,24 +1,31 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Exclude, Expose } from 'class-transformer';
+import { BaseModel } from './base.schema';
 
-@Schema()
-export class User extends Document {
+@Schema({ timestamps: true })
+export class User extends BaseModel {
   @Prop({ required: true, unique: true })
-  email: string; // User's email for login
+  @Expose() // Explicitly expose this field
+  email: string;
 
   @Prop({ required: true })
-  password: string; // Hashed password
+  @Exclude() // Exclude password
+  password: string;
 
   @Prop({ required: true })
-  name: string; // User's name
+  @Expose() // Explicitly expose this field
+  name: string;
 
   @Prop({ type: [String], default: ['tenant'] })
-  roles: string[]; // Roles array, e.g., ['admin', 'tenant']
+  @Expose() // Explicitly expose this field
+  roles: string[];
 
   @Prop({ default: true })
-  isActive: boolean; // Status of the user
+  @Exclude() // Exclude isActive
+  isActive: boolean;
 
   @Prop({ required: true })
+  @Expose() // Explicitly expose this field
   phone: string;
 }
 

@@ -10,18 +10,18 @@ import { Model } from 'mongoose';
 import { User, UserSchema } from 'src/models/user.schema';
 import { NameGeneratorService } from 'src/shared/name-generator.service';
 import { UploadService } from 'src/shared/upload.service';
-import { TenantConnectionService } from 'src/tenant-connection.service';
+import { TenantEntityConnectionService } from 'src/tenant-connection.service';
 import { AuthService } from '../auth/auth.service'; // Import AuthService
-import { Tenant } from '../models/tenant.schema';
+import { TenantEntity } from '../models/tenant-entity.schema';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 
 @Injectable()
-export class TenantService {
+export class TenantEntityService {
   constructor(
-    @InjectModel(Tenant.name) private tenantModel: Model<Tenant>,
+    @InjectModel(TenantEntity.name) private tenantModel: Model<TenantEntity>,
     private authService: AuthService, // Inject AuthService
     private readonly uploadService: UploadService, // Inject UploadService
-    private readonly tenantConnectionService: TenantConnectionService,
+    private readonly tenantEntityConnectionService: TenantEntityConnectionService,
     private readonly nameGenerator: NameGeneratorService, // Inject NameGeneratorService
   ) {}
 
@@ -29,7 +29,7 @@ export class TenantService {
     createTenantDto: CreateTenantDto,
     file: Express.Multer.File,
     userId: string,
-  ): Promise<Tenant> {
+  ): Promise<TenantEntity> {
     // Check if user already has 5 libraries
 
     const userTenantsCount = await this.tenantModel.countDocuments({
@@ -67,7 +67,7 @@ export class TenantService {
     });
 
     const tenantConnection =
-      await this.tenantConnectionService.getTenantConnection(dbName);
+      await this.tenantEntityConnectionService.getTenantConnection(dbName);
 
     // Create a user model for this tenant's DB connection
     const userModel = tenantConnection.model<User>('User', UserSchema);
@@ -85,7 +85,10 @@ export class TenantService {
     return newTenant;
   }
 
-  async updateSubdomain(tenantId: string, subdomain: string): Promise<Tenant> {
+  async updateSubdomain(
+    tenantId: string,
+    subdomain: string,
+  ): Promise<TenantEntity> {
     // Check if subdomain is already taken
     const existingTenant = await this.tenantModel.findOne({ subdomain });
     if (existingTenant) {
@@ -100,11 +103,11 @@ export class TenantService {
     );
   }
 
-  async findAll(): Promise<Tenant[]> {
+  async findAll(): Promise<TenantEntity[]> {
     return this.tenantModel.find().exec();
   }
 
-  async findById(id: string): Promise<Tenant> {
+  async findById(id: string): Promise<TenantEntity> {
     const tenant = await this.tenantModel.findById(id).exec();
     if (!tenant) {
       throw new NotFoundException(`Tenant with ID ${id} not found`);

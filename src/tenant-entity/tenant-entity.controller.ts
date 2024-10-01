@@ -17,26 +17,26 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
+import { TenantEntity } from 'src/models/tenant-entity.schema';
 import { RolesGuard } from 'src/passport/role.gaurd';
 import { Roles } from '../decorators/roles.decorator';
-import { Tenant } from '../models/tenant.schema';
 import { CreateTenantDto } from './dto/create-tenant.dto';
-import { TenantService } from './tenant.service';
+import { TenantEntityService } from './tenant-entity.service';
 
-@ApiTags('Tenants')
+@ApiTags('Entity')
 @ApiBearerAuth()
 @UseGuards(RolesGuard)
 @Roles(['admin', 'tenant'])
-@Controller('tenants')
-export class TenantController {
-  constructor(private readonly tenantService: TenantService) {}
+@Controller('tenant-entities')
+export class TenantEntityController {
+  constructor(private readonly tenantEntityService: TenantEntityService) {}
 
   @Post('create')
   @ApiOperation({ summary: 'Create a new tenant' })
   @ApiResponse({
     status: 201,
     description: 'Tenant created successfully',
-    type: Tenant,
+    type: TenantEntity,
   })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @UseInterceptors(FileInterceptor('logo'))
@@ -44,22 +44,26 @@ export class TenantController {
     @Body() createTenantDto: CreateTenantDto,
     @UploadedFile() file: Express.Multer.File,
     @CurrentUser('_id') userId: string,
-  ): Promise<Tenant> {
-    return this.tenantService.createTenant(createTenantDto, file, userId);
+  ): Promise<TenantEntity> {
+    return this.tenantEntityService.createTenant(createTenantDto, file, userId);
   }
 
   @Get()
   @ApiOperation({ summary: 'Retrieve all tenants' })
-  @ApiResponse({ status: 200, description: 'List of tenants', type: [Tenant] })
-  async findAll(): Promise<Tenant[]> {
-    return this.tenantService.findAll();
+  @ApiResponse({
+    status: 200,
+    description: 'List of tenants',
+    type: [TenantEntity],
+  })
+  async findAll(): Promise<TenantEntity[]> {
+    return this.tenantEntityService.findAll();
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Retrieve a tenant by ID' })
-  @ApiResponse({ status: 200, description: 'Tenant found', type: Tenant })
+  @ApiResponse({ status: 200, description: 'Tenant found', type: TenantEntity })
   @ApiResponse({ status: 404, description: 'Tenant not found' })
-  async findOne(@Param('id') id: string): Promise<Tenant> {
-    return this.tenantService.findById(id);
+  async findOne(@Param('id') id: string): Promise<TenantEntity> {
+    return this.tenantEntityService.findById(id);
   }
 }

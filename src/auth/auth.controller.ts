@@ -8,41 +8,19 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
-import { Roles } from 'src/decorators/roles.decorator';
 import { User } from 'src/models/user.schema';
 import { JwtRefreshAuthGuard } from 'src/passport/jwt-refresh.gaurd';
 import { JwtAuthGuard } from 'src/passport/jwt.gaurd';
-import { RolesGuard } from 'src/passport/role.gaurd';
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login-user.dto';
-import { RegisterUserDto } from './dto/register-user.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-
-  @Post('register')
-  @UseGuards(RolesGuard)
-  @Roles(['admin'], true) // Requires the user to have 'admin' role
-  @ApiBearerAuth('access-token') // Swagger will use Bearer token for auth endpoints
-  @ApiOperation({ summary: 'Register a new user' })
-  @ApiResponse({ status: 201, description: 'User registered successfully.' })
-  @ApiResponse({
-    status: 409,
-    description: 'User with this email already exists.',
-  })
-  async register(@Body() registerUserDto: RegisterUserDto) {
-    return this.authService.registerUser(registerUserDto);
-  }
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
