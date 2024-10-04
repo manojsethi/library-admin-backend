@@ -108,6 +108,15 @@ export class TenantEntityService {
     paginationDto: PaginationDto,
     user: User,
   ): Promise<PaginationResult<TenantEntityDto>> {
+    if (!user.roles.includes('admin')) {
+      const existingFilters = paginationDto.filter || {};
+
+      // Append a filter to exclude users with the "admin" role
+      paginationDto.filter = {
+        ...existingFilters,
+        creator: user._id,
+      };
+    }
     return this.paginationService.paginate<TenantEntity, TenantEntityDto>(
       this.tenantEntityModel,
       paginationDto,
