@@ -37,7 +37,7 @@ export class ContactDto {
   email: string;
 }
 
-export class CreateTenantDto {
+export class CreateTenantEntityDto {
   @ApiProperty({ description: 'Name of the tenant' })
   @IsString()
   @IsNotEmpty()
@@ -49,12 +49,6 @@ export class CreateTenantDto {
   @IsString()
   @IsNotEmpty()
   libraryName: string;
-
-  @ApiProperty({
-    description: 'User for whom this library is created',
-  })
-  @IsString()
-  userId: string;
 
   @ApiProperty({ description: 'Address of the tenant', type: AddressDto })
   @ValidateNested()

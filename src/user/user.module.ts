@@ -11,6 +11,6 @@ import { UserService } from './user.service';
   ],
   providers: [UserService],
   controllers: [UserController],
-  exports: [],
+  exports: [UserService],
 })
 export class UserModule {}

@@ -9,35 +9,40 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserSchema } from 'src/models/user.schema';
 import { NameGeneratorService } from 'src/shared/name-generator.service';
+import { PaginationDto, PaginationResult } from 'src/shared/pagination.dto';
+import { PaginationService } from 'src/shared/pagination.service';
 import { UploadService } from 'src/shared/upload.service';
 import { TenantEntityConnectionService } from 'src/tenant-connection.service';
-import { AuthService } from '../auth/auth.service'; // Import AuthService
+import { UserService } from 'src/user/user.service';
 import { TenantEntity } from '../models/tenant-entity.schema';
-import { CreateTenantDto } from './dto/create-tenant.dto';
+import { CreateTenantEntityDto } from './dto/create-tenant-entity.dto';
+import { TenantEntityDto } from './dto/tenant-entity.dto';
 
 @Injectable()
 export class TenantEntityService {
   constructor(
-    @InjectModel(TenantEntity.name) private tenantModel: Model<TenantEntity>,
-    private authService: AuthService, // Inject AuthService
+    @InjectModel(TenantEntity.name)
+    private tenantEntityModel: Model<TenantEntity>,
+    private userService: UserService, // Inject AuthService
+    private readonly paginationService: PaginationService,
     private readonly uploadService: UploadService, // Inject UploadService
     private readonly tenantEntityConnectionService: TenantEntityConnectionService,
     private readonly nameGenerator: NameGeneratorService, // Inject NameGeneratorService
   ) {}
 
-  async createTenant(
-    createTenantDto: CreateTenantDto,
+  async createTenantEntity(
+    createTenantDto: CreateTenantEntityDto,
     file: Express.Multer.File,
     userId: string,
   ): Promise<TenantEntity> {
-    // Check if user already has 5 libraries
-
-    const userTenantsCount = await this.tenantModel.countDocuments({
-      users: createTenantDto.userId,
+    const user = await this.userService.getUser(userId);
+    if (!user) throw new NotFoundException('User not found.');
+    const userTenantsCount = await this.tenantEntityModel.countDocuments({
+      users: userId,
     });
 
-    if (userTenantsCount >= 2) {
-      throw new ForbiddenException('You can have a maximum of 2 libraries.');
+    if (userTenantsCount >= 5) {
+      throw new ForbiddenException('You can have a maximum of 5 libraries.');
     }
 
     // Randomly assign a temporary subdomain
@@ -52,15 +57,12 @@ export class TenantEntityService {
     // }
     logoUrl = '';
 
-    // Create a new tenant
-    const newUserId = createTenantDto.userId;
-    delete createTenantDto.userId;
-    const newTenant = new this.tenantModel({
+    const newTenant = new this.tenantEntityModel({
       ...createTenantDto,
       logo: logoUrl,
       dbName,
       subdomain,
-      users: [newUserId],
+      users: [userId],
       creator: userId, // Add user reference
       isActive: false, // Initially inactive until subdomain is set
       isPublished: true,
@@ -75,12 +77,7 @@ export class TenantEntityService {
     // Register the user in the tenant's database
 
     await newTenant.save();
-    const newUser = new userModel({
-      name: createTenantDto.name,
-      password: 'Welcome12@#',
-      email: createTenantDto.contact.email,
-      phone: createTenantDto.contact.phone,
-    });
+    const newUser = new userModel(user);
     await newUser.save();
     return newTenant;
   }
@@ -90,13 +87,13 @@ export class TenantEntityService {
     subdomain: string,
   ): Promise<TenantEntity> {
     // Check if subdomain is already taken
-    const existingTenant = await this.tenantModel.findOne({ subdomain });
+    const existingTenant = await this.tenantEntityModel.findOne({ subdomain });
     if (existingTenant) {
       throw new BadRequestException('Subdomain is already taken.');
     }
 
     // Update tenant with the new subdomain and mark as active
-    return this.tenantModel.findByIdAndUpdate(
+    return this.tenantEntityModel.findByIdAndUpdate(
       tenantId,
       { subdomain, isActive: true },
       { new: true },
@@ -104,11 +101,22 @@ export class TenantEntityService {
   }
 
   async findAll(): Promise<TenantEntity[]> {
-    return this.tenantModel.find().exec();
+    return this.tenantEntityModel.find().exec();
+  }
+
+  async paginate(
+    paginationDto: PaginationDto,
+    user: User,
+  ): Promise<PaginationResult<TenantEntityDto>> {
+    return this.paginationService.paginate<TenantEntity, TenantEntityDto>(
+      this.tenantEntityModel,
+      paginationDto,
+      TenantEntityDto, // Pass the DTO class
+    );
   }
 
   async findById(id: string): Promise<TenantEntity> {
-    const tenant = await this.tenantModel.findById(id).exec();
+    const tenant = await this.tenantEntityModel.findById(id).exec();
     if (!tenant) {
       throw new NotFoundException(`Tenant with ID ${id} not found`);
     }

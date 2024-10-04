@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Schema as MongooseSchema } from 'mongoose';
 import { BaseModel } from './base.schema';
 
-@Schema()
+@Schema({ timestamps: true })
 export class TenantEntity extends BaseModel {
   @Prop({ required: true, unique: true })
   subdomain: string; // e.g., tenant1
@@ -42,6 +42,7 @@ export class TenantEntity extends BaseModel {
       state: { type: String, required: true },
       country: { type: String, required: true },
     },
+    _id: false,
   })
   address: {
     street: string;
@@ -55,6 +56,7 @@ export class TenantEntity extends BaseModel {
       phone: { type: String, required: true },
       email: { type: String, required: true },
     },
+    _id: false,
   })
   contact: {
     phone: string;

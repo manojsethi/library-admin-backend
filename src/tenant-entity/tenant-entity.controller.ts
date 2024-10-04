@@ -18,15 +18,18 @@ import {
 } from '@nestjs/swagger';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { TenantEntity } from 'src/models/tenant-entity.schema';
+import { User } from 'src/models/user.schema';
 import { RolesGuard } from 'src/passport/role.gaurd';
+import { PaginationDto, PaginationResult } from 'src/shared/pagination.dto';
 import { Roles } from '../decorators/roles.decorator';
-import { CreateTenantDto } from './dto/create-tenant.dto';
+import { CreateTenantEntityDto } from './dto/create-tenant-entity.dto';
+import { TenantEntityDto } from './dto/tenant-entity.dto';
 import { TenantEntityService } from './tenant-entity.service';
 
-@ApiTags('Entity')
+@ApiTags('Tenant Entity')
 @ApiBearerAuth()
 @UseGuards(RolesGuard)
-@Roles(['admin', 'tenant'])
+@Roles(['admin', 'tenant', 'tenant-admin'])
 @Controller('tenant-entities')
 export class TenantEntityController {
   constructor(private readonly tenantEntityService: TenantEntityService) {}
@@ -41,11 +44,15 @@ export class TenantEntityController {
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @UseInterceptors(FileInterceptor('logo'))
   async create(
-    @Body() createTenantDto: CreateTenantDto,
+    @Body() createTenantDto: CreateTenantEntityDto,
     @UploadedFile() file: Express.Multer.File,
     @CurrentUser('_id') userId: string,
   ): Promise<TenantEntity> {
-    return this.tenantEntityService.createTenant(createTenantDto, file, userId);
+    return this.tenantEntityService.createTenantEntity(
+      createTenantDto,
+      file,
+      userId,
+    );
   }
 
   @Get()
@@ -57,6 +64,19 @@ export class TenantEntityController {
   })
   async findAll(): Promise<TenantEntity[]> {
     return this.tenantEntityService.findAll();
+  }
+
+  @Post('all')
+  @ApiOperation({
+    summary: 'Retrieve Tenant Entities with pagination and filters',
+  })
+  @ApiResponse({ status: 200, description: 'List of users' })
+  async getTenantEntities(
+    @Body() paginationDto: PaginationDto,
+    @CurrentUser() user: User,
+  ): Promise<PaginationResult<TenantEntityDto>> {
+    const data = await this.tenantEntityService.paginate(paginationDto, user);
+    return data;
   }
 
   @Get(':id')

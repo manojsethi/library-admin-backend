@@ -8,6 +8,7 @@ import {
 } from 'src/models/tenant-entity.schema';
 import { SharedModule } from 'src/shared/shared.module';
 import { TenantEntityConnectionService } from 'src/tenant-connection.service';
+import { UserModule } from 'src/user/user.module';
 import { TenantEntityController } from './tenant-entity.controller';
 import { TenantEntityService } from './tenant-entity.service';
 
@@ -18,6 +19,7 @@ import { TenantEntityService } from './tenant-entity.service';
     ]),
     AuthModule,
     SharedModule,
+    UserModule,
   ],
   controllers: [TenantEntityController],
   providers: [TenantEntityService, TenantEntityConnectionService],

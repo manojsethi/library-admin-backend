@@ -44,6 +44,7 @@ export class UserService {
     // Save the user to the database
     return await newUser.save();
   }
+
   async paginate(
     paginationDto: PaginationDto,
   ): Promise<PaginationResult<UserDto>> {
@@ -72,5 +73,9 @@ export class UserService {
     }
 
     return { message: 'User deleted successfully' };
+  }
+
+  async getUser(id: string): Promise<User> {
+    return await this.userModel.findById(id).lean();
   }
 }

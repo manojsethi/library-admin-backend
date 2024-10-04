@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { BaseModel } from './base.schema';
 
-@Schema()
+@Schema({ timestamps: true })
 export class RefreshToken extends BaseModel {
   @Prop({ required: true })
   userId: string;
